@@ -1,12 +1,12 @@
-setwd("C:/Users/Subu/vaccination_spatial")
+setwd("~/Downloads/vaccination_spatial")
 library(readxl)
 #Question to ask is there any correlation spatially for seifa and census data
 allImmunization<-read_excel("./data/immunisationAIW.xlsx",sheet="TAB 3",skip=15)
 allImmunization=(allImmunization[,c(1,2,3,4,5,6,7,8,9)])
+allImmunization1=allImmunization[allImmunization$`Reporting Year`=='2016-17',]
+allImmunization1$`Percent fully immunised (%)`<-as.numeric(allImmunization1$`Percent fully immunised (%)`)
 
-allImmunization$`Percent fully immunised (%)`<-as.numeric(allImmunization$`Percent fully immunised (%)`)
-
-
+unique(allImmunization$`Reporting Year`)
 
 #fc=read.csv("./data/familycompo.csv")
 head(allImmunization)
@@ -16,10 +16,20 @@ library(rgdal)
 library(rmapshaper)
 
 
+
 sa3<- readOGR("./data","SA3_2016_AUST")
+
+head(sa3)
+nsw_2016<-sa3[sa3$STE_CODE16==1,]
+detect<-nsw_2016@data$SA3_CODE16 ==10803
+nsw_2016<-nsw_2016[!detect,]
+plot(nsw)
+
+
 plot(sa3)
-states_simp <- ms_simplify(sa3)
-total=merge(states_simp,allImmunization,by.x='SA3_CODE16',by.y='SA3 code',duplicateGeoms = TRUE)
+states_simp <- ms_simplify(nsw)
+
+total=merge(nsw_2016,allImmunization1,by.x='SA3_CODE16',by.y='SA3 code',duplicateGeoms = TRUE)
 total=total[complete.cases(total@data),]
 
 proj4string(total) <- CRS("+init=EPSG:27700")
